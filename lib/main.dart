@@ -12,7 +12,7 @@ void main() {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
-  
+
   runApp(const ApiManagerApp());
 }
 

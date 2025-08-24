@@ -8,10 +8,7 @@ import 'add_api_key_screen.dart';
 class ProviderDetailScreen extends StatelessWidget {
   final ApiProvider provider;
 
-  const ProviderDetailScreen({
-    super.key,
-    required this.provider,
-  });
+  const ProviderDetailScreen({super.key, required this.provider});
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +66,9 @@ class ProviderDetailScreen extends StatelessWidget {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
@@ -89,10 +88,17 @@ class ProviderDetailScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                provider.isCustom ? 'Custom Provider' : 'Built-in Provider',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
-                                ),
+                                provider.isCustom
+                                    ? 'Custom Provider'
+                                    : 'Built-in Provider',
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.color
+                                          ?.withOpacity(0.7),
+                                    ),
                               ),
                             ],
                           ),
@@ -102,13 +108,21 @@ class ProviderDetailScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     _buildInfoRow(context, 'Base URL', provider.baseUrl),
                     const SizedBox(height: 8),
-                    _buildInfoRow(context, 'API Keys', '${apiKeys.length} key${apiKeys.length != 1 ? 's' : ''}'),
+                    _buildInfoRow(
+                      context,
+                      'API Keys',
+                      '${apiKeys.length} key${apiKeys.length != 1 ? 's' : ''}',
+                    ),
                     const SizedBox(height: 8),
-                    _buildInfoRow(context, 'Created', _formatDate(provider.createdAt)),
+                    _buildInfoRow(
+                      context,
+                      'Created',
+                      _formatDate(provider.createdAt),
+                    ),
                   ],
                 ),
               ),
-              
+
               // API Keys Section
               Expanded(
                 child: Column(
@@ -128,7 +142,10 @@ class ProviderDetailScreen extends StatelessWidget {
                             icon: const Icon(Icons.add, size: 18),
                             label: const Text('Add Key'),
                             style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
                             ),
                           ),
                         ],
@@ -143,25 +160,40 @@ class ProviderDetailScreen extends StatelessWidget {
                                   Icon(
                                     Icons.key_off,
                                     size: 64,
-                                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.color
+                                        ?.withOpacity(0.5),
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
                                     'No API Keys',
-                                    style: Theme.of(context).textTheme.titleMedium,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     'Add an API key to get started',
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.color
+                                              ?.withOpacity(0.7),
+                                        ),
                                   ),
                                 ],
                               ),
                             )
                           : ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
                               itemCount: apiKeys.length,
                               itemBuilder: (context, index) {
                                 final apiKey = apiKeys[index];
@@ -169,8 +201,16 @@ class ProviderDetailScreen extends StatelessWidget {
                                   apiKey: apiKey,
                                   provider: provider,
                                   onEdit: () => _editApiKey(context, apiKey),
-                                  onDelete: () => _deleteApiKey(context, apiKey, apiProvider),
-                                  onToggleActive: () => _toggleApiKeyActive(context, apiKey, apiProvider),
+                                  onDelete: () => _deleteApiKey(
+                                    context,
+                                    apiKey,
+                                    apiProvider,
+                                  ),
+                                  onToggleActive: () => _toggleApiKeyActive(
+                                    context,
+                                    apiKey,
+                                    apiProvider,
+                                  ),
                                 );
                               },
                             ),
@@ -195,15 +235,14 @@ class ProviderDetailScreen extends StatelessWidget {
             '$label:',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w500,
-              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              color: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.color?.withOpacity(0.7),
             ),
           ),
         ),
         Expanded(
-          child: Text(
-            value,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
         ),
       ],
     );
@@ -217,7 +256,8 @@ class ProviderDetailScreen extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AddApiKeyScreen(preSelectedProviderId: provider.id),
+        builder: (context) =>
+            AddApiKeyScreen(preSelectedProviderId: provider.id),
       ),
     );
   }
@@ -225,18 +265,22 @@ class ProviderDetailScreen extends StatelessWidget {
   void _editApiKey(BuildContext context, ApiKey apiKey) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => AddApiKeyScreen(apiKey: apiKey),
-      ),
+      MaterialPageRoute(builder: (context) => AddApiKeyScreen(apiKey: apiKey)),
     );
   }
 
-  void _deleteApiKey(BuildContext context, ApiKey apiKey, providers.ApiProviderManager apiProvider) async {
+  void _deleteApiKey(
+    BuildContext context,
+    ApiKey apiKey,
+    providers.ApiProviderManager apiProvider,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete API Key'),
-        content: Text('Are you sure you want to delete "${apiKey.alias ?? apiKey.maskedKey}"?'),
+        content: Text(
+          'Are you sure you want to delete "${apiKey.alias ?? apiKey.maskedKey}"?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -263,27 +307,33 @@ class ProviderDetailScreen extends StatelessWidget {
     }
   }
 
-  void _toggleApiKeyActive(BuildContext context, ApiKey apiKey, providers.ApiProviderManager apiProvider) async {
+  void _toggleApiKeyActive(
+    BuildContext context,
+    ApiKey apiKey,
+    providers.ApiProviderManager apiProvider,
+  ) async {
     final updatedKey = apiKey.copyWith(isActive: !apiKey.isActive);
     final success = await apiProvider.updateApiKey(updatedKey);
-    
+
     if (!success && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update API key')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to update API key')));
     }
   }
 
   void _deleteProvider(BuildContext context) async {
     final apiProvider = context.read<providers.ApiProviderManager>();
     final keyCount = apiProvider.getApiKeysForProvider(provider.id).length;
-    
+
     if (keyCount > 0) {
       await showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Cannot Remove Provider'),
-          content: Text('This provider has $keyCount API key(s). Please delete all API keys first.'),
+          content: Text(
+            'This provider has $keyCount API key(s). Please delete all API keys first.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -299,7 +349,9 @@ class ProviderDetailScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Remove Provider'),
-        content: Text('Are you sure you want to remove "${provider.name}"? This action cannot be undone.'),
+        content: Text(
+          'Are you sure you want to remove "${provider.name}"? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),

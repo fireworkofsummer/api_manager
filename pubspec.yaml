@@ -55,6 +55,11 @@ dependencies:
   # UI components
   flutter_staggered_animations: ^1.1.1
   animations: ^2.0.11
+  
+  # App update functionality
+  package_info_plus: ^8.0.2
+  url_launcher: ^6.3.0
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

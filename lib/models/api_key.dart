@@ -31,7 +31,9 @@ class ApiKey {
       isActive: (json['isActive'] as int? ?? 1) == 1,
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
-      lastUsed: json['lastUsed'] != null ? DateTime.parse(json['lastUsed']) : null,
+      lastUsed: json['lastUsed'] != null
+          ? DateTime.parse(json['lastUsed'])
+          : null,
     );
   }
 

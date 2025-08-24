@@ -4,10 +4,14 @@ import '../providers/api_provider.dart' as providers;
 import '../widgets/api_key_card.dart';
 import '../widgets/provider_card.dart';
 import '../widgets/sync_status_widget.dart';
+import '../widgets/update_dialog.dart';
 import '../screens/add_api_key_screen.dart';
 import '../screens/add_provider_screen.dart';
 import '../screens/sync_settings_screen.dart';
 import '../screens/provider_detail_screen.dart';
+import '../screens/settings_screen.dart';
+import '../services/update_service.dart';
+import '../services/database_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,6 +23,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TabController _tabController;
   int _currentIndex = 0;
+  final UpdateService _updateService = UpdateService();
+  final DatabaseService _dbService = DatabaseService();
 
   @override
   void initState() {
@@ -31,9 +37,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         });
       }
     });
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<providers.ApiProviderManager>().initialize();
+      _checkForUpdatesOnStartup();
     });
   }
 
@@ -74,6 +81,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               );
             },
           ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              switch (value) {
+                case 'settings':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsScreen(),
+                    ),
+                  );
+                  break;
+                case 'check_update':
+                  checkForUpdatesAndShow(context);
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'settings',
+                child: ListTile(
+                  leading: Icon(Icons.settings),
+                  title: Text('设置'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'check_update',
+                child: ListTile(
+                  leading: Icon(Icons.system_update),
+                  title: Text('检查更新'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
       body: Column(
@@ -82,10 +124,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: [
-                _buildApiKeysTab(),
-                _buildProvidersTab(),
-              ],
+              children: [_buildApiKeysTab(), _buildProvidersTab()],
             ),
           ),
         ],
@@ -170,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             itemBuilder: (context, index) {
               final apiKey = apiProvider.apiKeys[index];
               final provider = apiProvider.getProviderById(apiKey.providerId);
-              
+
               return ApiKeyCard(
                 apiKey: apiKey,
                 provider: provider,
@@ -229,10 +268,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  '没有供应商',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+                Text('没有供应商', style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 8),
                 Text(
                   '点击 + 按钮添加自定义供应商',
@@ -261,7 +297,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
                 ...defaultProviders.map((provider) {
-                  final keyCount = apiProvider.getApiKeysForProvider(provider.id).length;
+                  final keyCount = apiProvider
+                      .getApiKeysForProvider(provider.id)
+                      .length;
                   return ProviderCard(
                     provider: provider,
                     keyCount: keyCount,
@@ -280,7 +318,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
                 ...customProviders.map((provider) {
-                  final keyCount = apiProvider.getApiKeysForProvider(provider.id).length;
+                  final keyCount = apiProvider
+                      .getApiKeysForProvider(provider.id)
+                      .length;
                   return ProviderCard(
                     provider: provider,
                     keyCount: keyCount,
@@ -300,27 +340,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _showAddApiKeyDialog() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AddApiKeyScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const AddApiKeyScreen()),
     );
   }
 
   void _showAddProviderDialog() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AddProviderScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const AddProviderScreen()),
     );
   }
 
   void _editApiKey(apiKey) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => AddApiKeyScreen(apiKey: apiKey),
-      ),
+      MaterialPageRoute(builder: (context) => AddApiKeyScreen(apiKey: apiKey)),
     );
   }
 
@@ -347,23 +381,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
 
     if (confirmed == true && mounted) {
-      final success = await context.read<providers.ApiProviderManager>().deleteApiKey(apiKey.id);
+      final success = await context
+          .read<providers.ApiProviderManager>()
+          .deleteApiKey(apiKey.id);
       if (!success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('删除 API 密钥失败')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('删除 API 密钥失败')));
       }
     }
   }
 
   void _toggleApiKeyActive(apiKey) async {
     final updatedKey = apiKey.copyWith(isActive: !apiKey.isActive);
-    final success = await context.read<providers.ApiProviderManager>().updateApiKey(updatedKey);
-    
+    final success = await context
+        .read<providers.ApiProviderManager>()
+        .updateApiKey(updatedKey);
+
     if (!success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('更新 API 密钥失败')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('更新 API 密钥失败')));
     }
   }
 
@@ -386,8 +424,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _deleteProvider(provider) async {
-    final keyCount = context.read<providers.ApiProviderManager>().getApiKeysForProvider(provider.id).length;
-    
+    final keyCount = context
+        .read<providers.ApiProviderManager>()
+        .getApiKeysForProvider(provider.id)
+        .length;
+
     if (keyCount > 0) {
       await showDialog(
         context: context,
@@ -427,12 +468,63 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
 
     if (confirmed == true && mounted) {
-      final success = await context.read<providers.ApiProviderManager>().deleteProvider(provider.id);
+      final success = await context
+          .read<providers.ApiProviderManager>()
+          .deleteProvider(provider.id);
       if (!success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('删除供应商失败')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('删除供应商失败')));
       }
+    }
+  }
+
+  Future<void> _checkForUpdatesOnStartup() async {
+    try {
+      final settings = await _dbService.getAppSettings();
+      final autoCheck = (settings?['autoCheckUpdates'] ?? 1) == 1;
+
+      if (!autoCheck) return;
+
+      // 检查上次检查时间，避免频繁检查
+      final lastCheck = settings?['lastUpdateCheck'];
+      if (lastCheck != null) {
+        final lastCheckDate = DateTime.parse(lastCheck);
+        final hoursSinceLastCheck = DateTime.now()
+            .difference(lastCheckDate)
+            .inHours;
+
+        // 如果小于24小时前检查过，就跳过
+        if (hoursSinceLastCheck < 24) return;
+      }
+
+      final hasUpdate = await _updateService.hasNewVersion();
+      if (hasUpdate) {
+        final currentInfo = await _updateService.getCurrentAppInfo();
+        final latestVersion = await _updateService.checkForUpdates();
+
+        if (latestVersion != null && mounted) {
+          // 延迟显示更新对话框，避免与初始化冲突
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (context) => UpdateDialog(
+                  appVersion: latestVersion,
+                  currentVersion: currentInfo.version,
+                ),
+              );
+            }
+          });
+        }
+      }
+
+      // 更新最后检查时间
+      await _dbService.updateLastUpdateCheck();
+    } catch (e) {
+      // 静默处理错误，不影响正常使用
+      print('Auto update check failed: $e');
     }
   }
 }

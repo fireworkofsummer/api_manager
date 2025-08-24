@@ -16,14 +16,14 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
   final _urlController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   bool _autoSync = false;
   int _syncInterval = 300;
   bool _isLoading = false;
   bool _isTesting = false;
   bool _passwordVisible = false;
   String? _lastSyncTime;
-  
+
   final SyncService _syncService = SyncService();
 
   @override
@@ -43,7 +43,7 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
   Future<void> _loadCurrentConfig() async {
     final apiProvider = context.read<ApiProviderManager>();
     final config = await apiProvider.getSyncConfig();
-    
+
     if (config != null && mounted) {
       setState(() {
         _urlController.text = config.webdavUrl ?? '';
@@ -69,14 +69,14 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
 
     try {
       final success = await _syncService.testConnection(config);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(success ? '连接成功！' : '连接失败，请检查配置'),
-            backgroundColor: success 
-              ? Theme.of(context).colorScheme.primary 
-              : Theme.of(context).colorScheme.error,
+            backgroundColor: success
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -112,11 +112,11 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
     try {
       final apiProvider = context.read<ApiProviderManager>();
       await apiProvider.saveSyncConfig(config);
-      
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('同步配置已保存')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('同步配置已保存')));
         Navigator.pop(context);
       }
     } catch (e) {
@@ -140,17 +140,17 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
 
     try {
       final result = await _syncService.syncData();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result.message),
-            backgroundColor: result.success 
-              ? Theme.of(context).colorScheme.primary 
-              : Theme.of(context).colorScheme.error,
+            backgroundColor: result.success
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.error,
           ),
         );
-        
+
         if (result.success) {
           await _loadCurrentConfig();
           await context.read<ApiProviderManager>().loadProviders();
@@ -182,17 +182,17 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         actions: [
-          if (_urlController.text.isNotEmpty && 
-              _usernameController.text.isNotEmpty && 
+          if (_urlController.text.isNotEmpty &&
+              _usernameController.text.isNotEmpty &&
               _passwordController.text.isNotEmpty)
             IconButton(
-              icon: _isLoading 
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.sync),
+              icon: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.sync),
               onPressed: _isLoading ? null : _performSync,
               tooltip: '立即同步',
             ),
@@ -225,10 +225,7 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'WebDAV 连接',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('WebDAV 连接', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 16),
             TextFormField(
               controller: _urlController,
@@ -272,7 +269,9 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
                 labelText: '密码',
                 prefixIcon: const Icon(Icons.lock),
                 suffixIcon: IconButton(
-                  icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off),
+                  icon: Icon(
+                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                  ),
                   onPressed: () {
                     setState(() => _passwordVisible = !_passwordVisible);
                   },
@@ -291,13 +290,13 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: _isTesting ? null : _testConnection,
-                icon: _isTesting 
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.wifi_protected_setup),
+                icon: _isTesting
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.wifi_protected_setup),
                 label: Text(_isTesting ? '测试中...' : '测试连接'),
               ),
             ),
@@ -314,10 +313,7 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '同步设置',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('同步设置', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 16),
             SwitchListTile(
               title: const Text('自动同步'),
@@ -362,22 +358,19 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '操作',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('操作', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: _isLoading ? null : _saveConfig,
-                icon: _isLoading 
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.save),
+                icon: _isLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.save),
                 label: Text(_isLoading ? '保存中...' : '保存配置'),
               ),
             ),
@@ -386,7 +379,9 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: _isLoading ? null : () => _showSyncOptions('upload'),
+                    onPressed: _isLoading
+                        ? null
+                        : () => _showSyncOptions('upload'),
                     icon: const Icon(Icons.cloud_upload),
                     label: const Text('上传数据'),
                   ),
@@ -394,7 +389,9 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: _isLoading ? null : () => _showSyncOptions('download'),
+                    onPressed: _isLoading
+                        ? null
+                        : () => _showSyncOptions('download'),
                     icon: const Icon(Icons.cloud_download),
                     label: const Text('下载数据'),
                   ),
@@ -414,10 +411,7 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '同步状态',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('同步状态', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             ListTile(
               leading: const Icon(Icons.schedule),
@@ -432,12 +426,18 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
 
   String _getSyncIntervalText() {
     switch (_syncInterval) {
-      case 60: return '每1分钟';
-      case 300: return '每5分钟';
-      case 600: return '每10分钟';
-      case 1800: return '每30分钟';
-      case 3600: return '每1小时';
-      default: return '${_syncInterval}秒';
+      case 60:
+        return '每1分钟';
+      case 300:
+        return '每5分钟';
+      case 600:
+        return '每10分钟';
+      case 1800:
+        return '每30分钟';
+      case 3600:
+        return '每1小时';
+      default:
+        return '${_syncInterval}秒';
     }
   }
 
@@ -447,9 +447,9 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
       builder: (context) => AlertDialog(
         title: Text(type == 'upload' ? '上传数据' : '下载数据'),
         content: Text(
-          type == 'upload' 
-            ? '这将把本地数据上传到云端，覆盖云端数据。确定继续吗？'
-            : '这将用云端数据覆盖本地数据。本地修改将丢失。确定继续吗？'
+          type == 'upload'
+              ? '这将把本地数据上传到云端，覆盖云端数据。确定继续吗？'
+              : '这将用云端数据覆盖本地数据。本地修改将丢失。确定继续吗？',
         ),
         actions: [
           TextButton(
@@ -477,17 +477,17 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
 
     try {
       final result = await _syncService.uploadData();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result.message),
-            backgroundColor: result.success 
-              ? Theme.of(context).colorScheme.primary 
-              : Theme.of(context).colorScheme.error,
+            backgroundColor: result.success
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.error,
           ),
         );
-        
+
         if (result.success) {
           await _loadCurrentConfig();
         }
@@ -513,17 +513,17 @@ class _SyncSettingsScreenState extends State<SyncSettingsScreen> {
 
     try {
       final result = await _syncService.downloadData();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result.message),
-            backgroundColor: result.success 
-              ? Theme.of(context).colorScheme.primary 
-              : Theme.of(context).colorScheme.error,
+            backgroundColor: result.success
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.error,
           ),
         );
-        
+
         if (result.success) {
           await _loadCurrentConfig();
           await context.read<ApiProviderManager>().loadProviders();

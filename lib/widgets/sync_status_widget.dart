@@ -18,7 +18,7 @@ class _SyncStatusWidgetState extends State<SyncStatusWidget> {
     return Consumer<ApiProviderManager>(
       builder: (context, apiProvider, child) {
         final syncConfig = apiProvider.syncConfig;
-        
+
         if (syncConfig == null || !syncConfig.isConfigured) {
           return const SizedBox.shrink();
         }
@@ -29,9 +29,7 @@ class _SyncStatusWidgetState extends State<SyncStatusWidget> {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: Theme.of(context).dividerColor,
-            ),
+            border: Border.all(color: Theme.of(context).dividerColor),
           ),
           child: Row(
             children: [
@@ -98,24 +96,21 @@ class _SyncStatusWidgetState extends State<SyncStatusWidget> {
     if (syncConfig == null || !syncConfig.isConfigured) return;
 
     setState(() {});
-    
+
     await _syncService.initialize(syncConfig);
     final result = await _syncService.syncData();
-    
+
     setState(() {});
-    
+
     if (!mounted) return;
-    
+
     if (result.success) {
       await apiProvider.loadProviders();
       await apiProvider.loadApiKeys();
       await apiProvider.loadSyncConfig();
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.message),
-          backgroundColor: Colors.green,
-        ),
+        SnackBar(content: Text(result.message), backgroundColor: Colors.green),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

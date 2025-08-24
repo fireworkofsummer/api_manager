@@ -5,9 +5,9 @@ import '../providers/api_provider.dart';
 
 class AddProviderScreen extends StatefulWidget {
   final ApiProvider? provider;
-  
+
   const AddProviderScreen({super.key, this.provider});
-  
+
   @override
   State<AddProviderScreen> createState() => _AddProviderScreenState();
 }
@@ -17,11 +17,11 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
   final _nameController = TextEditingController();
   final _baseUrlController = TextEditingController();
   final _iconUrlController = TextEditingController();
-  
+
   bool _isLoading = false;
-  
+
   bool get _isEditing => widget.provider != null;
-  
+
   @override
   void initState() {
     super.initState();
@@ -31,7 +31,7 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
       _iconUrlController.text = widget.provider!.iconUrl ?? '';
     }
   }
-  
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -39,7 +39,7 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
     _iconUrlController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,7 +68,7 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 16),
-                    
+
                     TextFormField(
                       controller: _nameController,
                       decoration: const InputDecoration(
@@ -86,9 +86,9 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
                         return null;
                       },
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     TextFormField(
                       controller: _baseUrlController,
                       decoration: const InputDecoration(
@@ -100,22 +100,24 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
                         if (value == null || value.trim().isEmpty) {
                           return '请输入基础 URL';
                         }
-                        
+
                         final uri = Uri.tryParse(value.trim());
-                        if (uri == null || !uri.hasScheme || !uri.hasAuthority) {
+                        if (uri == null ||
+                            !uri.hasScheme ||
+                            !uri.hasAuthority) {
                           return '请输入有效的 URL';
                         }
-                        
+
                         if (!['http', 'https'].contains(uri.scheme)) {
                           return 'URL 必须使用 http 或 https';
                         }
-                        
+
                         return null;
                       },
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     TextFormField(
                       controller: _iconUrlController,
                       decoration: const InputDecoration(
@@ -126,10 +128,12 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
                       validator: (value) {
                         if (value != null && value.trim().isNotEmpty) {
                           final uri = Uri.tryParse(value.trim());
-                          if (uri == null || !uri.hasScheme || !uri.hasAuthority) {
+                          if (uri == null ||
+                              !uri.hasScheme ||
+                              !uri.hasAuthority) {
                             return '请输入有效的 URL';
                           }
-                          
+
                           if (!['http', 'https'].contains(uri.scheme)) {
                             return 'URL 必须使用 http 或 https';
                           }
@@ -141,9 +145,9 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -160,7 +164,7 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     const SizedBox(height: 16),
-                    
+
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -180,9 +184,9 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             if (_isLoading)
               const Center(child: CircularProgressIndicator())
             else
@@ -208,7 +212,7 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
       ),
     );
   }
-  
+
   List<Map<String, dynamic>> _getCommonProviders() {
     return [
       {
@@ -243,7 +247,8 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
       },
       {
         'name': 'Azure OpenAI',
-        'baseUrl': 'https://YOUR_RESOURCE.openai.azure.com/openai/deployments/YOUR_DEPLOYMENT',
+        'baseUrl':
+            'https://YOUR_RESOURCE.openai.azure.com/openai/deployments/YOUR_DEPLOYMENT',
         'icon': Icons.cloud,
         'color': const Color(0xFF0078D4),
       },
@@ -255,7 +260,7 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
       },
     ];
   }
-  
+
   void _fillProviderTemplate(Map<String, dynamic> template) {
     setState(() {
       _nameController.text = template['name'];
@@ -263,34 +268,40 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
       _iconUrlController.clear();
     });
   }
-  
+
   Future<void> _saveProvider() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final provider = ApiProvider(
         id: _isEditing ? widget.provider!.id : '',
         name: _nameController.text.trim(),
         baseUrl: _baseUrlController.text.trim(),
-        iconUrl: _iconUrlController.text.trim().isEmpty ? null : _iconUrlController.text.trim(),
+        iconUrl: _iconUrlController.text.trim().isEmpty
+            ? null
+            : _iconUrlController.text.trim(),
         isCustom: true,
         createdAt: _isEditing ? widget.provider!.createdAt : DateTime.now(),
         updatedAt: DateTime.now(),
       );
-      
+
       bool success;
       if (_isEditing) {
-        success = await context.read<ApiProviderManager>().updateProvider(provider);
+        success = await context.read<ApiProviderManager>().updateProvider(
+          provider,
+        );
       } else {
         final existingProviders = context.read<ApiProviderManager>().providers;
         final nameExists = existingProviders.any(
-          (p) => p.name.toLowerCase() == provider.name.toLowerCase() && p.id != provider.id,
+          (p) =>
+              p.name.toLowerCase() == provider.name.toLowerCase() &&
+              p.id != provider.id,
         );
-        
+
         if (nameExists) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -302,10 +313,12 @@ class _AddProviderScreenState extends State<AddProviderScreen> {
           }
           return;
         }
-        
-        success = await context.read<ApiProviderManager>().addProvider(provider);
+
+        success = await context.read<ApiProviderManager>().addProvider(
+          provider,
+        );
       }
-      
+
       if (success && mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(

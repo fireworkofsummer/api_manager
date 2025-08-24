@@ -29,6 +29,14 @@
 - **流畅动画**：丰富的交互动画效果
 - **响应式布局**：适配不同屏幕尺寸
 
+### 🔄 智能更新系统
+- **自动检查**：启动时自动检查新版本，支持手动检查
+- **无缝更新**：保持用户数据完整的升级体验
+- **权限管理**：智能处理Android安装权限
+- **下载优化**：支持WiFi专用下载，节省流量
+- **版本管理**：语义化版本控制，支持强制更新
+- **平台适配**：Android自动安装，Windows引导下载
+
 ## 🚀 快速开始
 
 ### 环境要求
@@ -92,6 +100,13 @@ flutter build apk --release
 - 显示时自动脱敏（如：sk-1234...5678）
 - 支持复制完整密钥到剪贴板
 
+### 5. 应用设置
+- 进入设置页面管理应用配置
+- 配置自动更新检查选项
+- 设置WiFi专用下载模式
+- 手动检查应用更新
+- 查看应用版本和许可信息
+
 ## 🛠️ 技术架构
 
 ### 核心技术栈
@@ -101,6 +116,8 @@ flutter build apk --release
 - **网络请求**：Dio + HTTP
 - **同步协议**：WebDAV
 - **加密**：Dart Crypto
+- **更新检查**：GitHub Releases API
+- **权限管理**：Permission Handler
 
 ### 项目结构
 ```
@@ -109,23 +126,28 @@ lib/
 ├── models/                   # 数据模型
 │   ├── api_key.dart         # API密钥模型
 │   ├── api_provider.dart    # 供应商模型
-│   └── sync_config.dart     # 同步配置模型
+│   ├── sync_config.dart     # 同步配置模型
+│   └── app_version.dart     # 应用版本模型
 ├── providers/               # 状态管理
 │   └── api_provider.dart    # 主要状态管理器
 ├── screens/                 # 界面页面
 │   ├── home_screen.dart     # 主页面
 │   ├── add_api_key_screen.dart    # 添加密钥页面
 │   ├── add_provider_screen.dart   # 添加供应商页面
-│   └── sync_settings_screen.dart  # 同步设置页面
+│   ├── sync_settings_screen.dart  # 同步设置页面
+│   ├── provider_detail_screen.dart # 供应商详情页面
+│   └── settings_screen.dart       # 应用设置页面
 ├── services/                # 业务服务
 │   ├── database_service.dart      # 数据库服务
-│   └── sync_service.dart          # 同步服务
+│   ├── sync_service.dart          # 同步服务
+│   └── update_service.dart        # 更新服务
 ├── utils/                   # 工具类
 │   └── app_theme.dart       # 主题配置
 └── widgets/                 # 通用组件
     ├── api_key_card.dart    # 密钥卡片组件
     ├── provider_card.dart   # 供应商卡片组件
-    └── sync_status_widget.dart     # 同步状态组件
+    ├── sync_status_widget.dart     # 同步状态组件
+    └── update_dialog.dart           # 更新对话框组件
 ```
 
 ## 🔧 开发配置
@@ -146,6 +168,35 @@ flutter analyze
 flutter test
 ```
 
+## 🔄 智能更新系统
+
+### 更新特性
+- **GitHub集成**：基于GitHub Releases API自动检查更新
+- **版本对比**：语义化版本控制，精确判断版本新旧
+- **平台适配**：
+  - **Android**：自动下载APK并引导安装
+  - **Windows**：打开浏览器下载页面
+- **下载管理**：
+  - 实时下载进度显示
+  - WiFi专用下载模式
+  - 后台下载支持
+- **权限处理**：智能申请和管理Android安装权限
+- **数据保护**：更新过程中完全保留用户数据
+- **强制更新**：支持关键更新的强制升级
+
+### 更新流程
+1. 应用启动时自动检查更新（可配置）
+2. 发现新版本时显示更新对话框
+3. 用户可选择立即更新或稍后提醒
+4. 下载完成后自动引导安装
+5. 安装后数据自动迁移保留
+
+### 配置选项
+- 启动时自动检查更新
+- 仅在WiFi环境下载更新
+- 手动检查更新功能
+- 查看上次更新检查时间
+
 ## 📝 更新日志
 
 ### v1.0.0 (当前版本)
@@ -154,6 +205,9 @@ flutter test
 - ✅ WebDAV同步功能
 - ✅ Android和Windows平台支持
 - ✅ Material Design 3界面
+- ✅ 智能应用内更新系统
+- ✅ 应用设置与配置管理
+- ✅ 权限管理和安全优化
 
 ## 🤝 贡献指南
 

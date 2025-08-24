@@ -36,12 +36,12 @@ class SyncService {
         user: config.username!,
         password: config.password!,
       );
-      
+
       await client.ping();
-      
+
       // 测试目录创建权限
       await _ensureDirectoryExists(client);
-      
+
       return true;
     } catch (e) {
       print('Connection test failed: $e');
@@ -53,22 +53,22 @@ class SyncService {
     if (_isSyncing || _client == null || _config == null) {
       return SyncResult(
         success: false,
-        message: _isSyncing 
-          ? 'Sync already in progress' 
-          : 'Sync not configured',
+        message: _isSyncing
+            ? 'Sync already in progress'
+            : 'Sync not configured',
       );
     }
 
     _isSyncing = true;
-    
+
     try {
       final localData = await _getLocalData();
       final remoteExists = await _remoteFileExists();
-      
+
       if (!remoteExists) {
         return await _uploadData(localData);
       }
-      
+
       final remoteData = await _downloadData();
       if (remoteData == null) {
         return SyncResult(
@@ -76,23 +76,16 @@ class SyncService {
           message: 'Failed to download remote data',
         );
       }
-      
+
       final mergedData = await _mergeData(localData, remoteData);
       await _saveLocalData(mergedData);
       await _uploadData(mergedData);
-      
+
       await _updateLastSyncTime();
-      
-      return SyncResult(
-        success: true,
-        message: 'Sync completed successfully',
-      );
-      
+
+      return SyncResult(success: true, message: 'Sync completed successfully');
     } catch (e) {
-      return SyncResult(
-        success: false,
-        message: 'Sync failed: $e',
-      );
+      return SyncResult(success: false, message: 'Sync failed: $e');
     } finally {
       _isSyncing = false;
     }
@@ -102,24 +95,21 @@ class SyncService {
     if (_isSyncing || _client == null) {
       return SyncResult(
         success: false,
-        message: _isSyncing 
-          ? 'Sync already in progress' 
-          : 'Sync not configured',
+        message: _isSyncing
+            ? 'Sync already in progress'
+            : 'Sync not configured',
       );
     }
 
     _isSyncing = true;
-    
+
     try {
       final localData = await _getLocalData();
       final result = await _uploadData(localData);
       await _updateLastSyncTime();
       return result;
     } catch (e) {
-      return SyncResult(
-        success: false,
-        message: 'Upload failed: $e',
-      );
+      return SyncResult(success: false, message: 'Upload failed: $e');
     } finally {
       _isSyncing = false;
     }
@@ -129,35 +119,29 @@ class SyncService {
     if (_isSyncing || _client == null) {
       return SyncResult(
         success: false,
-        message: _isSyncing 
-          ? 'Sync already in progress' 
-          : 'Sync not configured',
+        message: _isSyncing
+            ? 'Sync already in progress'
+            : 'Sync not configured',
       );
     }
 
     _isSyncing = true;
-    
+
     try {
       final remoteData = await _downloadData();
       if (remoteData == null) {
-        return SyncResult(
-          success: false,
-          message: 'No remote data found',
-        );
+        return SyncResult(success: false, message: 'No remote data found');
       }
-      
+
       await _saveLocalData(remoteData);
       await _updateLastSyncTime();
-      
+
       return SyncResult(
         success: true,
         message: 'Download completed successfully',
       );
     } catch (e) {
-      return SyncResult(
-        success: false,
-        message: 'Download failed: $e',
-      );
+      return SyncResult(success: false, message: 'Download failed: $e');
     } finally {
       _isSyncing = false;
     }
@@ -166,7 +150,7 @@ class SyncService {
   Future<SyncData> _getLocalData() async {
     final providers = await _dbService.getAllProviders();
     final apiKeys = await _dbService.getAllApiKeys();
-    
+
     return SyncData(
       providers: providers,
       apiKeys: apiKeys,
@@ -176,14 +160,14 @@ class SyncService {
 
   Future<bool> _remoteFileExists() async {
     final filePath = '$_folderPath/$_dataFileName';
-    
+
     try {
       await _ensureDirectoryExists(_client!);
       await _client!.read(filePath);
       return true;
     } catch (e) {
       print('Remote file check failed for $filePath: $e');
-      
+
       // 回退策略：检查根目录
       try {
         await _client!.read(_dataFileName);
@@ -200,20 +184,20 @@ class SyncService {
     try {
       await _ensureDirectoryExists(_client!);
       final filePath = '$_folderPath/$_dataFileName';
-      
+
       List<int> response;
       try {
         response = await _client!.read(filePath);
         print('Downloaded from: $filePath');
       } catch (e) {
         print('Download from $filePath failed: $e');
-        
+
         // 回退策略：从根目录下载
         print('Trying fallback: downloading from root directory');
         response = await _client!.read(_dataFileName);
         print('Fallback download successful from root');
       }
-      
+
       final jsonData = json.decode(utf8.decode(response));
       return SyncData.fromJson(jsonData);
     } catch (e) {
@@ -225,47 +209,46 @@ class SyncService {
   Future<SyncResult> _uploadData(SyncData data) async {
     try {
       await _ensureDirectoryExists(_client!);
-      
+
       final jsonData = json.encode(data.toJson());
       final bytes = utf8.encode(jsonData);
       final filePath = '$_folderPath/$_dataFileName';
-      
+
       // 尝试上传，如果失败则尝试不同的路径
       try {
         await _client!.write(filePath, bytes);
         print('Upload successful to: $filePath');
       } catch (e) {
         print('Upload to $filePath failed: $e');
-        
+
         // 回退策略：尝试直接写入根目录
         print('Trying fallback: writing to root directory');
         await _client!.write(_dataFileName, bytes);
         print('Fallback upload successful to root');
       }
-      
-      return SyncResult(
-        success: true,
-        message: 'Data uploaded successfully',
-      );
+
+      return SyncResult(success: true, message: 'Data uploaded successfully');
     } catch (e) {
       print('Upload failed details: $e');
-      
+
       // 提供更详细的错误信息
       String errorMessage = 'Upload failed: ';
       if (e.toString().contains('404') || e.toString().contains('Not Found')) {
-        errorMessage += 'Directory not found or no write permission. Please check WebDAV path and permissions.';
-      } else if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
-        errorMessage += 'Authentication failed. Please check username and password.';
-      } else if (e.toString().contains('403') || e.toString().contains('Forbidden')) {
-        errorMessage += 'Permission denied. Please check write permissions on WebDAV server.';
+        errorMessage +=
+            'Directory not found or no write permission. Please check WebDAV path and permissions.';
+      } else if (e.toString().contains('401') ||
+          e.toString().contains('Unauthorized')) {
+        errorMessage +=
+            'Authentication failed. Please check username and password.';
+      } else if (e.toString().contains('403') ||
+          e.toString().contains('Forbidden')) {
+        errorMessage +=
+            'Permission denied. Please check write permissions on WebDAV server.';
       } else {
         errorMessage += e.toString();
       }
-      
-      return SyncResult(
-        success: false,
-        message: errorMessage,
-      );
+
+      return SyncResult(success: false, message: errorMessage);
     }
   }
 
@@ -304,15 +287,15 @@ class SyncService {
 
   Future<void> _saveLocalData(SyncData data) async {
     final db = await _dbService.database;
-    
+
     await db.transaction((txn) async {
       await txn.delete('providers');
       await txn.delete('api_keys');
-      
+
       for (final provider in data.providers) {
         await txn.insert('providers', provider.toJson());
       }
-      
+
       for (final apiKey in data.apiKeys) {
         await txn.insert('api_keys', apiKey.toJson());
       }
@@ -380,8 +363,5 @@ class SyncResult {
   final bool success;
   final String message;
 
-  SyncResult({
-    required this.success,
-    required this.message,
-  });
+  SyncResult({required this.success, required this.message});
 }

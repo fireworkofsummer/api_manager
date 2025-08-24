@@ -35,7 +35,9 @@ class ApiKeyCard extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -74,7 +76,9 @@ class ApiKeyCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w500,
-                                  color: apiKey.isActive ? Colors.green : Colors.grey,
+                                  color: apiKey.isActive
+                                      ? Colors.green
+                                      : Colors.grey,
                                 ),
                               ),
                             ),
@@ -131,7 +135,9 @@ class ApiKeyCard extends StatelessWidget {
                         value: 'toggle',
                         child: Row(
                           children: [
-                            Icon(apiKey.isActive ? Icons.pause : Icons.play_arrow),
+                            Icon(
+                              apiKey.isActive ? Icons.pause : Icons.play_arrow,
+                            ),
                             const SizedBox(width: 8),
                             Text(apiKey.isActive ? '停用' : '启用'),
                           ],
@@ -157,9 +163,7 @@ class ApiKeyCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Theme.of(context).dividerColor,
-                  ),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                 ),
                 child: Row(
                   children: [
@@ -181,7 +185,8 @@ class ApiKeyCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (apiKey.description != null && apiKey.description!.isNotEmpty) ...[
+              if (apiKey.description != null &&
+                  apiKey.description!.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
                   apiKey.description!,
@@ -237,7 +242,10 @@ class ApiKeyCard extends StatelessWidget {
             if (apiKey.description != null && apiKey.description!.isNotEmpty)
               _buildDetailRow('描述', apiKey.description!),
             const SizedBox(height: 8),
-            const Text('API 密钥:', style: TextStyle(fontWeight: FontWeight.w500)),
+            const Text(
+              'API 密钥:',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
             const SizedBox(height: 4),
             Container(
               width: double.infinity,

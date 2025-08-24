@@ -6,9 +6,9 @@ import '../providers/api_provider.dart' as providers;
 class AddApiKeyScreen extends StatefulWidget {
   final ApiKey? apiKey;
   final String? preSelectedProviderId;
-  
+
   const AddApiKeyScreen({super.key, this.apiKey, this.preSelectedProviderId});
-  
+
   @override
   State<AddApiKeyScreen> createState() => _AddApiKeyScreenState();
 }
@@ -18,14 +18,14 @@ class _AddApiKeyScreenState extends State<AddApiKeyScreen> {
   final _aliasController = TextEditingController();
   final _keyController = TextEditingController();
   final _descriptionController = TextEditingController();
-  
+
   ApiProvider? _selectedProvider;
   bool _isActive = true;
   bool _isLoading = false;
   bool _obscureKey = true;
-  
+
   bool get _isEditing => widget.apiKey != null;
-  
+
   @override
   void initState() {
     super.initState();
@@ -35,21 +35,25 @@ class _AddApiKeyScreenState extends State<AddApiKeyScreen> {
       _descriptionController.text = widget.apiKey!.description ?? '';
       _isActive = widget.apiKey!.isActive;
     }
-    
+
     // Set up the pre-selected provider after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final apiProvider = context.read<providers.ApiProviderManager>();
       if (_isEditing) {
-        _selectedProvider = apiProvider.getProviderById(widget.apiKey!.providerId);
+        _selectedProvider = apiProvider.getProviderById(
+          widget.apiKey!.providerId,
+        );
       } else if (widget.preSelectedProviderId != null) {
-        _selectedProvider = apiProvider.getProviderById(widget.preSelectedProviderId!);
+        _selectedProvider = apiProvider.getProviderById(
+          widget.preSelectedProviderId!,
+        );
       }
       if (mounted && _selectedProvider != null) {
         setState(() {});
       }
     });
   }
-  
+
   @override
   void dispose() {
     _aliasController.dispose();
@@ -57,7 +61,7 @@ class _AddApiKeyScreenState extends State<AddApiKeyScreen> {
     _descriptionController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,9 +77,11 @@ class _AddApiKeyScreenState extends State<AddApiKeyScreen> {
       body: Consumer<providers.ApiProviderManager>(
         builder: (context, apiProvider, child) {
           if (_isEditing && _selectedProvider == null) {
-            _selectedProvider = apiProvider.getProviderById(widget.apiKey!.providerId);
+            _selectedProvider = apiProvider.getProviderById(
+              widget.apiKey!.providerId,
+            );
           }
-          
+
           return Form(
             key: _formKey,
             child: ListView(
@@ -112,7 +118,9 @@ class _AddApiKeyScreenState extends State<AddApiKeyScreen> {
                                     width: 24,
                                     height: 24,
                                     decoration: BoxDecoration(
-                                      color: _getProviderColor(provider.name).withOpacity(0.1),
+                                      color: _getProviderColor(
+                                        provider.name,
+                                      ).withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Icon(
@@ -127,19 +135,21 @@ class _AddApiKeyScreenState extends State<AddApiKeyScreen> {
                               ),
                             );
                           }).toList(),
-                          onChanged: _isEditing ? null : (value) {
-                            setState(() {
-                              _selectedProvider = value;
-                            });
-                          },
+                          onChanged: _isEditing
+                              ? null
+                              : (value) {
+                                  setState(() {
+                                    _selectedProvider = value;
+                                  });
+                                },
                         ),
                       ],
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -151,7 +161,7 @@ class _AddApiKeyScreenState extends State<AddApiKeyScreen> {
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 16),
-                        
+
                         TextFormField(
                           controller: _aliasController,
                           decoration: const InputDecoration(
@@ -160,16 +170,20 @@ class _AddApiKeyScreenState extends State<AddApiKeyScreen> {
                           ),
                           textCapitalization: TextCapitalization.words,
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         TextFormField(
                           controller: _keyController,
                           decoration: InputDecoration(
                             labelText: 'API 密钥',
                             hintText: '输入您的 API 密钥',
                             suffixIcon: IconButton(
-                              icon: Icon(_obscureKey ? Icons.visibility : Icons.visibility_off),
+                              icon: Icon(
+                                _obscureKey
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
                               onPressed: () {
                                 setState(() {
                                   _obscureKey = !_obscureKey;
@@ -188,9 +202,9 @@ class _AddApiKeyScreenState extends State<AddApiKeyScreen> {
                             return null;
                           },
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         TextFormField(
                           controller: _descriptionController,
                           decoration: const InputDecoration(
@@ -200,9 +214,9 @@ class _AddApiKeyScreenState extends State<AddApiKeyScreen> {
                           maxLines: 3,
                           textCapitalization: TextCapitalization.sentences,
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         SwitchListTile(
                           title: const Text('激活'),
                           subtitle: const Text('此密钥是否可用'),
@@ -218,9 +232,9 @@ class _AddApiKeyScreenState extends State<AddApiKeyScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 if (_isLoading)
                   const Center(child: CircularProgressIndicator())
                 else
@@ -248,35 +262,43 @@ class _AddApiKeyScreenState extends State<AddApiKeyScreen> {
       ),
     );
   }
-  
+
   Future<void> _saveApiKey() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedProvider == null) return;
-    
+
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final apiKey = ApiKey(
         id: _isEditing ? widget.apiKey!.id : '',
         providerId: _selectedProvider!.id,
         keyValue: _keyController.text.trim(),
-        alias: _aliasController.text.trim().isEmpty ? null : _aliasController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+        alias: _aliasController.text.trim().isEmpty
+            ? null
+            : _aliasController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
         isActive: _isActive,
         createdAt: _isEditing ? widget.apiKey!.createdAt : DateTime.now(),
         updatedAt: DateTime.now(),
         lastUsed: _isEditing ? widget.apiKey!.lastUsed : null,
       );
-      
+
       bool success;
       if (_isEditing) {
-        success = await context.read<providers.ApiProviderManager>().updateApiKey(apiKey);
+        success = await context
+            .read<providers.ApiProviderManager>()
+            .updateApiKey(apiKey);
       } else {
-        success = await context.read<providers.ApiProviderManager>().addApiKey(apiKey);
+        success = await context.read<providers.ApiProviderManager>().addApiKey(
+          apiKey,
+        );
       }
-      
+
       if (success && mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -310,7 +332,7 @@ class _AddApiKeyScreenState extends State<AddApiKeyScreen> {
       }
     }
   }
-  
+
   IconData _getProviderIcon(String name) {
     switch (name.toLowerCase()) {
       case 'openai':

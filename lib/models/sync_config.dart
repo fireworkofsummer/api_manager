@@ -22,7 +22,9 @@ class SyncConfig {
       password: json['password'],
       autoSync: (json['autoSync'] as int? ?? 0) == 1,
       syncInterval: json['syncInterval'] ?? 300,
-      lastSyncAt: json['lastSyncAt'] != null ? DateTime.parse(json['lastSyncAt']) : null,
+      lastSyncAt: json['lastSyncAt'] != null
+          ? DateTime.parse(json['lastSyncAt'])
+          : null,
     );
   }
 
@@ -56,12 +58,12 @@ class SyncConfig {
   }
 
   bool get isConfigured {
-    return webdavUrl != null && 
-           webdavUrl!.isNotEmpty && 
-           username != null && 
-           username!.isNotEmpty && 
-           password != null && 
-           password!.isNotEmpty;
+    return webdavUrl != null &&
+        webdavUrl!.isNotEmpty &&
+        username != null &&
+        username!.isNotEmpty &&
+        password != null &&
+        password!.isNotEmpty;
   }
 
   @override
